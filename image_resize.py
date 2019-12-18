@@ -1,6 +1,5 @@
 import argparse
 import os
-import sys
 from PIL import Image
 
 
@@ -11,53 +10,28 @@ def get_image(path_to_original):
     return Image.open(path_to_original)
 
 
-def get_resize_image_by_width(path_to_original, width):
-    image = get_image(path_to_original)
-    if image is None:
-        return
-    image_width, image_height = image.size
-    resized_image = image.resize(
-        (width, int(width*image_height/image_width))
-    )
-    return resized_image
-
-
-def get_resize_image_by_height(path_to_original, height):
-    image = get_image(path_to_original)
-    if image is None:
-        return
-    image_width, image_height = image.size
-    resized_image = image.resize(
-        (int(round(float(height)*image_width/image_height)), int(height))
-    )
-    return resized_image
-
-
-def get_resize_image_by_size(path_to_original, width, height):
-    image = get_image(path_to_original)
-    if image is None:
-        return
-    image_width, image_height = image.size
-    if int(image_height/image_width) != (height/width):
-        print('not proportional')
-    resized_image = image.resize((width, height))
-    return resized_image
-
-
-def get_resize_image_by_scale(path_to_original, scale):
-    image = get_image(path_to_original)
-    if image is None:
-        return
-    image_width, image_height = image.size
-    resized_image = image.resize(
-        (image_width * scale, image_height * scale)
-    )
-    return resized_image
+def get_size(size_image, width_resize, height_resize, scale_resize):
+    image_width, image_height = size_image
+    if width_resize is not None and height_resize is None:
+        size_image = (
+            int(width_resize),
+            int(round(float(width_resize) * float(image_height / image_width)))
+        )
+    if height_resize is not None and width_resize is None:
+        size_image = (
+            int(round(float(height_resize)*float(image_width/image_height))),
+            int(height_resize)
+        )
+    if scale_resize is not None:
+        size_image = (
+            int(image_width) * int(scale_resize),
+            int(image_height) * int(scale_resize)
+        )
+    return size_image
 
 
 def save_image(image, path_to_result):
     if path_to_result.find(".jpg") > 0 or path_to_result.find(".png") > 0:
-        print("test")
         image.save(path_to_result)
     else:
         print('not correct out_path')
@@ -105,7 +79,6 @@ def create_parser():
 
 
 def main():
-    resize_image = None
     parser = create_parser()
     args = parser.parse_args()
     file_path = args.filepath
@@ -113,21 +86,15 @@ def main():
     width = args.width
     height = args.height
     scale = args.scale
-    if width is None and height is None and scale is not None:
-        resize_image = get_resize_image_by_scale(file_path, int(scale))
-    if width is not None and height is None and scale is None:
-        resize_image = get_resize_image_by_width(file_path, int(width))
-    if height is not None and width is None and scale is None:
-        resize_image = get_resize_image_by_height(file_path, height)
-    if width is not None and height is not None and scale is None:
-        resize_image = get_resize_image_by_size(
-            file_path, int(width), int(height)
-        )
-    if width is None and height is None and scale is not None:
-        resize_image = get_resize_image_by_scale(file_path, scale)
-    if file_outpath is None:
-        file_outpath = get_file_name_out(resize_image)
-    save_image(resize_image, file_outpath)
+    image_input = get_image(file_path)
+    if image_input is not None:
+        image_size = image_input.size
+        resize_parameter = get_size(image_size, width, height, scale)
+        print(resize_parameter)
+        resize_image = image_input.resize(resize_parameter)
+        if file_outpath is None:
+            file_outpath = get_file_name_out(resize_image)
+        save_image(resize_image, file_outpath)
 
 
 if __name__ == '__main__':
