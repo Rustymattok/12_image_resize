@@ -7,12 +7,14 @@ from PIL import Image
 def get_image(path_to_original):
     if not os.path.exists(path_to_original):
         print('not correct path to file')
-        return sys.exit()
+        return None
     return Image.open(path_to_original)
 
 
 def get_resize_image_by_width(path_to_original, width):
     image = get_image(path_to_original)
+    if image is None:
+        return
     image_width, image_height = image.size
     resized_image = image.resize(
         (width, int(width*image_height/image_width))
@@ -22,6 +24,8 @@ def get_resize_image_by_width(path_to_original, width):
 
 def get_resize_image_by_height(path_to_original, height):
     image = get_image(path_to_original)
+    if image is None:
+        return
     image_width, image_height = image.size
     resized_image = image.resize(
         (int(round(float(height)*image_width/image_height)), int(height))
@@ -31,6 +35,8 @@ def get_resize_image_by_height(path_to_original, height):
 
 def get_resize_image_by_size(path_to_original, width, height):
     image = get_image(path_to_original)
+    if image is None:
+        return
     image_width, image_height = image.size
     if int(image_height/image_width) != (height/width):
         print('not proportional')
@@ -40,6 +46,8 @@ def get_resize_image_by_size(path_to_original, width, height):
 
 def get_resize_image_by_scale(path_to_original, scale):
     image = get_image(path_to_original)
+    if image is None:
+        return
     image_width, image_height = image.size
     resized_image = image.resize(
         (image_width * scale, image_height * scale)
@@ -96,7 +104,7 @@ def create_parser():
     return parser
 
 
-if __name__ == '__main__':
+def main():
     resize_image = None
     parser = create_parser()
     args = parser.parse_args()
@@ -120,3 +128,7 @@ if __name__ == '__main__':
     if file_outpath is None:
         file_outpath = get_file_name_out(resize_image)
     save_image(resize_image, file_outpath)
+
+
+if __name__ == '__main__':
+    main()
