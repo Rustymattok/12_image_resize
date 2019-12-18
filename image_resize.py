@@ -115,15 +115,15 @@ def main():
     scale = args.scale
     if width is None and height is None and scale is not None:
         resize_image = get_resize_image_by_scale(file_path, int(scale))
-    elif width is not None and height is None and scale is None:
+    if width is not None and height is None and scale is None:
         resize_image = get_resize_image_by_width(file_path, int(width))
-    elif height is not None and width is None and scale is None:
+    if height is not None and width is None and scale is None:
         resize_image = get_resize_image_by_height(file_path, height)
-    elif width is not None and height is not None and scale is None:
+    if width is not None and height is not None and scale is None:
         resize_image = get_resize_image_by_size(
             file_path, int(width), int(height)
         )
-    elif width is None and height is None and scale is not None:
+    if width is None and height is None and scale is not None:
         resize_image = get_resize_image_by_scale(file_path, scale)
     if file_outpath is None:
         file_outpath = get_file_name_out(resize_image)
