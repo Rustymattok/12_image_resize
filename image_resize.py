@@ -59,7 +59,7 @@ def create_parser():
         '--output',
         type=str,
         required=False,
-        help='command - file path for save result'
+        help='command - file path  to directory for save result'
     )
     parser.add_argument(
         '-w',
