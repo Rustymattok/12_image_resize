@@ -9,53 +9,40 @@ def get_image(path_to_original):
     return Image.open(path_to_original)
 
 
-def get_resized_image(image, width_resized, height_resized, scale_resized):
+def validation_args(width, height, scale):
+    if width is not None and width > 0 and height is None and scale is None:
+        return True
+    if height is not None and height > 0 and width is None and scale is None:
+        return True
+    if scale is not None and scale > 0 and width is None and height is None:
+        return True
+    return False
+
+
+def get_resized_image(image, width, height, scale):
     if image is None:
         return None
     image_width, image_height = image.size
-    resized_image = None
-    if width_resized is not None \
-            and int(width_resized) > 0 \
-            and height_resized is None:
-        resized_image = (
-            int(width_resized),
-            int(round(
-                float(width_resized) * float(image_height / image_width)
-            ))
-        )
-    if height_resized is not None \
-            and int(height_resized) > 0 \
-            and width_resized is None:
-        resized_image = (
-            int(round(
-                float(height_resized) * float(image_width / image_height)
-            )),
-            int(height_resized)
-        )
-    if scale_resized is not None \
-            and int(scale_resized) > 0 \
-            and width_resized is None \
-            and height_resized is None:
-        resized_image = (
-            int(image_width) * int(scale_resized),
-            int(image_height) * int(scale_resized)
-        )
-    if resized_image is None:
-        return None
-    return image.resize(resized_image)
+    image_new_size = None
+    if width is not None and width > 0:
+        image_new_size = (width, round(width * image_height / image_width))
+    if height is not None and height > 0:
+        image_new_size = (round(height * image_width / image_height), height)
+    if scale is not None and scale > 0:
+        image_new_size = (image_width * scale, image_height * scale)
+    return image.resize(image_new_size)
 
 
 def save_image(image, path_to_result):
-    if not os.path.exists(path_to_result):
-        image.save(path_to_result)
-    else:
-        return None
+    image.save(path_to_result)
 
 
-def get_file_name_output(image):
+def get_file_name_output(image, file_outpath):
     width_image, height_image = image.size
-    path_file_out = 'pic_{width}x{height}.jpg'.\
-        format(width=str(width_image), height=str(height_image))
+    path_file_out = 'pic_{width}x{height}.jpg'. \
+        format(width=width_image, height=height_image)
+    if file_outpath is not None:
+        path_file_out = os.path.join(file_outpath, path_file_out)
     return path_file_out
 
 
@@ -70,24 +57,28 @@ def create_parser():
     parser.add_argument(
         '-o',
         '--output',
+        type=str,
         required=False,
         help='command - file path for save result'
     )
     parser.add_argument(
         '-w',
         '--width',
+        type=int,
         required=False,
         help='command width'
     )
     parser.add_argument(
         '-ht',
         '--height',
+        type=int,
         required=False,
         help='command height'
     )
     parser.add_argument(
         '-s',
         '--scale',
+        type=int,
         required=False,
         help='command scale'
     )
@@ -103,22 +94,20 @@ def main():
     height = args.height
     scale = args.scale
     image = get_image(file_path)
-    if file_outpath is not None and not os.path.exists(file_outpath):
+    if not validation_args(width, height, scale):
+        print('not correct command')
+        return
+    if file_outpath is not None and not os.path.isdir(file_outpath):
         print("not correct directory")
         return
     if image is None:
         print('not correct file path')
         return
-    image_resized = get_resized_image(image, width, height, scale)
-    if image_resized is None:
-        print('not correct command')
-        return
-    if file_outpath is None:
-        file_outpath = get_file_name_output(image_resized)
-    else:
-        file_outpath = file_outpath + get_file_name_output(image_resized)
-    if save_image(image_resized, file_outpath) is None:
+    image_new = get_resized_image(image, width, height, scale)
+    file_outpath = get_file_name_output(image_new, file_outpath)
+    if os.path.isfile(file_outpath):
         print('you try to rewrite current file')
+    save_image(image_new, file_outpath)
 
 
 if __name__ == '__main__':
