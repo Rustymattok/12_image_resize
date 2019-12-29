@@ -12,9 +12,9 @@ def get_image(path_to_original):
 def validate(width, height, scale):
     if scale and (width or height):
         return False
-    if (height and height < 0) or (width and width < 0):
+    if scale and scale < 0:
         return False
-    if width and height:
+    if (height and height < 0) or (width and width < 0):
         return False
     return True
 
@@ -28,6 +28,8 @@ def get_resized_image(image, width, height, scale):
         image_new_size = (width, round(width * image_height / image_width))
     if height:
         image_new_size = (round(height * image_width / image_height), height)
+    if width and height:
+        image_new_size = (width, height)
     if scale:
         image_new_size = (int(image_width * scale), int(image_height * scale))
     return image.resize(image_new_size)
@@ -39,9 +41,9 @@ def save_image(image, path_to_result):
 
 def get_file_name_output(path_to_original, image, file_outpath):
     width_image, height_image = image.size
-    format_file = path_to_original[-3:]
-    path_file_out = 'pic_{width}x{height}.{format}'. \
-        format(width=width_image, height=height_image, format=format_file)
+    format_file = os.path.splitext(path_to_original)
+    path_file_out = 'pic_{width}x{height}{format}'. \
+        format(width=width_image, height=height_image, format=format_file[1])
     if file_outpath is not None:
         path_file_out = os.path.join(file_outpath, path_file_out)
     return path_file_out
@@ -95,6 +97,8 @@ def main():
     height = args.height
     scale = args.scale
     image = get_image(file_path)
+    if width and height:
+        print('you use your own proportions')
     if not validate(width, height, scale):
         print('not correct command')
         return
@@ -108,6 +112,7 @@ def main():
     file_outpath = get_file_name_output(file_path, image_new, file_outpath)
     if os.path.isfile(file_outpath):
         print('you try to rewrite current file')
+        exit()
     save_image(image_new, file_outpath)
 
 
