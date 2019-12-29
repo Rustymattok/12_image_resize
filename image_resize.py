@@ -24,14 +24,14 @@ def get_resized_image(image, width, height, scale):
         return None
     image_width, image_height = image.size
     image_new_size = None
-    if width:
+    if width and not height:
         image_new_size = (width, round(width * image_height / image_width))
-    if height:
+    if height and not width:
         image_new_size = (round(height * image_width / image_height), height)
-    if width and height:
-        image_new_size = (width, height)
     if scale:
         image_new_size = (int(image_width * scale), int(image_height * scale))
+    if width and height:
+        image_new_size = (width, height)
     return image.resize(image_new_size)
 
 
@@ -41,9 +41,9 @@ def save_image(image, path_to_result):
 
 def get_file_name_output(path_to_original, image, file_outpath):
     width_image, height_image = image.size
-    format_file = os.path.splitext(path_to_original)
+    filename, ext = os.path.splitext(path_to_original)
     path_file_out = 'pic_{width}x{height}{format}'. \
-        format(width=width_image, height=height_image, format=format_file[1])
+        format(width=width_image, height=height_image, format=ext)
     if file_outpath is not None:
         path_file_out = os.path.join(file_outpath, path_file_out)
     return path_file_out
@@ -111,8 +111,7 @@ def main():
     image_new = get_resized_image(image, width, height, scale)
     file_outpath = get_file_name_output(file_path, image_new, file_outpath)
     if os.path.isfile(file_outpath):
-        print('you try to rewrite current file')
-        exit()
+        exit('you try to rewrite current file')
     save_image(image_new, file_outpath)
 
 
